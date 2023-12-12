@@ -1,0 +1,2026 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "description": "The app allows users to view schedules, sign up for fitness classes, buy a subscription, track their progress (weight, number of visits, body measurements), check if a gym is full to choose the best time, as well as meet and socialise to find exercise partners.",
+    "title": "\"Your Wellness App\" API сервер",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "description": "Generated server url",
+      "url": "http://localhost:8080"
+    }
+  ],
+  "tags": [
+    {
+      "description": "API для работы с категориями тренировок",
+      "name": "Admin: Категории тренировок"
+    },
+    {
+      "description": "API для работы с тренировками",
+      "name": "Admin: Тренировки"
+    },
+    {
+      "description": "API для работы с пользователями",
+      "name": "Admin: Пользователи"
+    },
+    {
+      "description": "API для работы с тренерами",
+      "name": "Admin: Тренеры"
+    },
+    {
+      "description": "API для работы со специализациями тренеров",
+      "name": "Admin: Специализации тренеров"
+    },
+    {
+      "description": "Закрытый API для работы с пользователями",
+      "name": "Private: Пользователи"
+    },
+    {
+      "description": "Закрытый API для работы с пользователями",
+      "name": "Private: Тренеры"
+    },
+    {
+      "description": "Публичный API для работы с тренировками",
+      "name": "Public: Расписание тренировок"
+    },
+    {
+      "description": "Публичный API для работы с абонементами",
+      "name": "Public: Абонементы"
+    },
+    {
+      "description": "Публичный API для работы с тренерами",
+      "name": "Public: Тренеры"
+    }
+  ],
+
+  "paths": {
+    "/admin/workouts/categories": {
+      "post": {
+        "description": "Обратите внимание: имя категории должно быть уникальным",
+        "operationId": "addCategory",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryNewDto"
+              }
+            }
+          },
+          "description": "данные добавляемой категории",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkoutCategoryDto"
+                }
+              }
+            },
+            "description": "Категория добавлена"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Field: name. Error: must not be blank. Value: null",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "CONFLICT",
+                  "reason": "Integrity constraint has been violated.",
+                  "message": "could not execute statement; SQL [n/a]; constraint [uq_category_name]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Нарушение целостности данных"
+          }
+        },
+        "summary": "Добавление новой категории тренировок",
+        "tags": [
+          "Admin: Категории тренировок"
+        ]
+      }
+    },
+    "/admin/workouts/categories/{catId}": {
+      "delete": {
+        "description": "Обратите внимание: с категорией не должно быть связано ни одной тренировки.",
+        "operationId": "deleteCategory",
+        "parameters": [
+          {
+            "description": "id категории",
+            "in": "path",
+            "name": "catId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Категория удалена"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "Category with id=27 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Категория не найдена или недоступна"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "CONFLICT",
+                  "reason": "For the requested operation the conditions are not met.",
+                  "message": "The category is not empty",
+                  "timestamp": "2023-01-21 16:56:19"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Существуют события, связанные с категорией"
+          }
+        },
+        "summary": "Удаление категории",
+        "tags": [
+          "Admin: Категории тренировок"
+        ]
+      },
+      "patch": {
+        "description": "Обратите внимание: имя категории должно быть уникальным",
+        "operationId": "updateCategory",
+        "parameters": [
+          {
+            "description": "id категории",
+            "in": "path",
+            "name": "catId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkoutCategoryDto"
+              }
+            }
+          },
+          "description": "Данные категории для изменения",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkoutCategoryDto"
+                }
+              }
+            },
+            "description": "Данные категории изменены"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "Category with id=27 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Категория не найдена или недоступна"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "CONFLICT",
+                  "reason": "Integrity constraint has been violated.",
+                  "message": "could not execute statement; SQL [n/a]; constraint [uq_category_name]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Нарушение целостности данных"
+          }
+        },
+        "summary": "Изменение категории",
+        "tags": [
+          "Admin: Категории"
+        ]
+      }
+    },
+    "/admin/workouts": {
+      "post": {
+        "operationId": "saveWorkout",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkoutNewDto"
+              }
+            }
+          },
+          "description": "Данные новой тренировки",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkoutNewDto"
+                }
+              }
+            },
+            "description": "Тренировка добавлена"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Field: title. Error: must not be blank. Value: null",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "CONFLICT",
+                  "reason": "Integrity constraint has been violated.",
+                  "message": "could not execute statement; SQL [n/a]; constraint [uq_compilation_name]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Нарушение целостности данных"
+          }
+        },
+        "summary": "Добавление новой тренировки",
+        "tags": [
+          "Admin: Тренировки"
+        ]
+      },
+      "get": {
+        "description": "Эндпоинт возвращает полную информацию обо всех тренировках подходящих под переданные условия\n\nВ случае, если по заданным фильтрам не найдено ни одного события, возвращает пустой список",
+        "operationId": "getWorkouts_Admin",
+        "parameters": [
+          {
+            "description": "список id тренеров, чьи тренировки нужно найти",
+            "in": "query",
+            "name": "trainers",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          },
+          {
+            "description": "список состояний в которых находятся искомые тренировки",
+            "in": "query",
+            "name": "states",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "description": "список id категорий в которых будет вестись поиск",
+            "in": "query",
+            "name": "categories",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          },
+          {
+            "description": "дата и время не раньше которых должна быть тренировка",
+            "in": "query",
+            "name": "rangeStart",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "дата и время не позже которых должна быть тренировка",
+            "in": "query",
+            "name": "rangeEnd",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "количество тренировок, которые нужно пропустить для формирования текущего набора",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "description": "количество тренировок в наборе",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkoutFullDto"
+                  }
+                }
+              }
+            },
+            "description": "Тренировки найдены"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Failed to convert value of type java.lang.String to required type int; nested exception is java.lang.NumberFormatException: For input string: ad",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          }
+        },
+        "summary": "Поиск событий",
+        "tags": [
+          "Admin: Тренировки"
+        ]
+      }
+  },
+    "/admin/workouts/{workoutId}": {
+      "delete": {
+        "operationId": "deleteWorkout",
+        "parameters": [
+          {
+            "description": "id тренировки",
+            "in": "path",
+            "name": "workoutId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Тренировка удалена"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "Compilation with id=11 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Тренировка не найдена или недоступна"
+          }
+        },
+        "summary": "Удаление тренировки",
+        "tags": [
+          "Admin: Тренировки"
+        ]
+      },
+      "patch": {
+        "operationId": "updateWorkout",
+        "parameters": [
+          {
+            "description": "id тренировки",
+            "in": "path",
+            "name": "workoutId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkoutFullDto"
+              }
+            }
+          },
+          "description": "Данные для обновления информации о тренировке",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkoutFullDto"
+                }
+              }
+            },
+            "description": "Информация о тренировке обновлена"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "Category with id=27 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Тренировка не найдена или недоступна"
+          }
+        },
+        "summary": "Обновить информацию о тренировке",
+        "tags": [
+          "Admin: Тренировки"
+        ]
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "description": "Возвращает информацию обо всех пользователях (учитываются параметры ограничения выборки), либо о конкретных (учитываются указанные идентификаторы)\n\nВ случае, если по заданным фильтрам не найдено ни одного пользователя, возвращает пустой список",
+        "operationId": "getUsers",
+        "parameters": [
+          {
+            "description": "id пользователей",
+            "in": "query",
+            "name": "ids",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          },
+          {
+            "description": "количество элементов, которые нужно пропустить для формирования текущего набора",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "description": "количество элементов в наборе",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserDto"
+                  }
+                }
+              }
+            },
+            "description": "Пользователи найдены"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Failed to convert value of type java.lang.String to required type int; nested exception is java.lang.NumberFormatException: For input string: ad",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          }
+        },
+        "summary": "Получение информации о пользователях",
+        "tags": [
+          "Admin: Пользователи"
+        ]
+      },
+      "post": {
+        "operationId": "registerUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserNewDto"
+              }
+            }
+          },
+          "description": "Данные добавляемого пользователя",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            },
+            "description": "Пользователь зарегистрирован"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Field: name. Error: must not be blank. Value: null",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "CONFLICT",
+                  "reason": "Integrity constraint has been violated.",
+                  "message": "could not execute statement; SQL [n/a]; constraint [uq_email]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Нарушение целостности данных"
+          }
+        },
+        "summary": "Добавление нового пользователя",
+        "tags": [
+          "Admin: Пользователи"
+        ]
+      }
+    },
+    "/admin/users/{userId}": {
+      "delete": {
+        "operationId": "deleteUser",
+        "parameters": [
+          {
+            "description": "id пользователя",
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Пользователь удален"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "User with id=555 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Пользователь не найден или недоступен"
+          }
+        },
+        "summary": "Удаление пользователя",
+        "tags": [
+          "Admin: Пользователи"
+        ]
+      }
+    },
+    "/admin/coaches": {
+      "get": {
+        "description": "Возвращает информацию обо всех тренерах (учитываются параметры ограничения выборки), либо о конкретных (учитываются указанные идентификаторы)\n\nВ случае, если по заданным фильтрам не найдено ни одного тренера, возвращает пустой список",
+        "operationId": "getCoaches",
+        "parameters": [
+          {
+            "description": "id тренеров",
+            "in": "query",
+            "name": "ids",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          },
+          {
+            "description": "количество элементов, которые нужно пропустить для формирования текущего набора",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "description": "количество элементов в наборе",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CoachDto"
+                  }
+                }
+              }
+            },
+            "description": "Тренеры найдены"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Failed to convert value of type java.lang.String to required type int; nested exception is java.lang.NumberFormatException: For input string: ad",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          }
+        },
+        "summary": "Получение информации о тренерах",
+        "tags": [
+          "Admin: Тренеры"
+        ]
+      },
+      "post": {
+        "operationId": "registerCoach",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoachDto"
+              }
+            }
+          },
+          "description": "Данные добавляемого тренера",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoachDto"
+                }
+              }
+            },
+            "description": "Тренер зарегистрирован"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Field: name. Error: must not be blank. Value: null",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "CONFLICT",
+                  "reason": "Integrity constraint has been violated.",
+                  "message": "could not execute statement; SQL [n/a]; constraint [uq_email]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Нарушение целостности данных"
+          }
+        },
+        "summary": "Добавление нового пользователя",
+        "tags": [
+          "Admin: Пользователи"
+        ]
+      }
+    },
+    "/admin/coaches/{coachId}": {
+      "delete": {
+        "operationId": "deleteCoach",
+        "parameters": [
+          {
+            "description": "id тренера",
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Тренер удален"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "User with id=555 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Тренер не найден или недоступен"
+          }
+        },
+        "summary": "Удаление тренера",
+        "tags": [
+          "Admin: Тренеры"
+        ]
+      }
+    },
+    "/workouts": {
+      "get": {
+        "description": "Обратите внимание: \n- это публичный эндпоинт, соответственно в выдаче должны быть только опубликованные события\n- текстовый поиск (по аннотации и подробному описанию) должен быть без учета регистра букв\n- если в запросе не указан диапазон дат [rangeStart-rangeEnd], то нужно выгружать события, которые произойдут позже текущей даты и времени\n- информация о каждом событии должна включать в себя количество просмотров и количество уже одобренных заявок на участие\n- информацию о том, что по этому эндпоинту был осуществлен и обработан запрос, нужно сохранить в сервисе статистики\n\nВ случае, если по заданным фильтрам не найдено ни одного события, возвращает пустой список",
+        "operationId": "getWorkoutsPublic",
+        "parameters": [
+          {
+            "description": "текст для поиска в содержимом названия и подробном описании тренировки",
+            "in": "query",
+            "name": "text",
+            "required": false,
+            "schema": {
+              "maxLength": 7000,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "description": "список идентификаторов категорий в которых будет вестись поиск",
+            "in": "query",
+            "name": "categories",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          },
+          {
+            "description": "поиск только платных/бесплатных тренировок",
+            "in": "query",
+            "name": "paid",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "дата и время начала периода",
+            "in": "query",
+            "name": "rangeStart",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "дата и время окончания периода",
+            "in": "query",
+            "name": "rangeEnd",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "только тренировки где еще есть места",
+            "in": "query",
+            "name": "onlyAvailable",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "description": "Вариант сортировки: по дате события или по количеству просмотров",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "EVENT_DATE",
+                "VIEWS"
+              ]
+            }
+          },
+          {
+            "description": "количество событий, которые нужно пропустить для формирования текущего набора",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "description": "количество событий в наборе",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkoutShortDto"
+                  }
+                }
+              }
+            },
+            "description": "Тренировки найдены"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Event must be published",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          }
+        },
+        "summary": "Получение событий с возможностью фильтрации",
+        "tags": [
+          "Public: Расписание тренировок"
+        ]
+      }
+    },
+    "/workouts/{workoutId}": {
+      "get": {
+        "description": "Обратите внимание:\n- событие должно быть опубликовано\n- информация о событии должна включать в себя количество просмотров и количество подтвержденных запросов\n- информацию о том, что по этому эндпоинту был осуществлен и обработан запрос, нужно сохранить в сервисе статистики\n\nВ случае, если события с заданным id не найдено, возвращает статус код 404",
+        "operationId": "getWorkout",
+        "parameters": [
+          {
+            "description": "id тренировки",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkoutFullDto"
+                }
+              }
+            },
+            "description": "Тренировка найдена"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Failed to convert value of type java.lang.String to required type int; nested exception is java.lang.NumberFormatException: For input string: ad",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "Event with id=13 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Тренировка не найдена или недоступна"
+          }
+        },
+        "summary": "Получение подробной информации о тренировке по ее идентификатору",
+        "tags": [
+          "Public: Расписание тренировок"
+        ]
+      }
+    },
+    "/users/{userId}/workouts": {
+      "get": {
+        "description": "В случае, если по заданным фильтрам не найдено ни одной тренировки, возвращает пустой список",
+        "operationId": "getWorkoutsByUser",
+        "parameters": [
+          {
+            "description": "id текущего пользователя",
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "description": "количество элементов, которые нужно пропустить для формирования текущего набора",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "description": "количество элементов в наборе",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkoutShortDto"
+                  }
+                }
+              }
+            },
+            "description": "Тренировки найдены"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Failed to convert value of type java.lang.String to required type int; nested exception is java.lang.NumberFormatException: For input string: ad",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          }
+        },
+        "summary": "Получение тренировок на которые записан пользователь",
+        "tags": [
+          "Private: Пользователи"
+        ]
+      }
+    },
+
+    "/users/{userId}/workouts/{workoutId}": {
+        "post": {
+        "description": "Обратите внимание:\n- нельзя добавить повторный запрос  (Ожидается код ошибки 409)\n- инициатор события не может добавить запрос на участие в своём событии (Ожидается код ошибки 409)\n- нельзя участвовать в неопубликованном событии (Ожидается код ошибки 409)\n- если у события достигнут лимит запросов на участие - необходимо вернуть ошибку  (Ожидается код ошибки 409)\n- если для события отключена пре-модерация запросов на участие, то запрос должен автоматически перейти в состояние подтвержденного",
+        "operationId": "addWorkoutRequest",
+        "parameters": [
+          {
+            "description": "id текущего пользователя",
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "description": "id события",
+            "in": "query",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParticipationRequestDto"
+                }
+              }
+            },
+            "description": "Заявка создана"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "BAD_REQUEST",
+                  "reason": "Incorrectly made request.",
+                  "message": "Failed to convert value of type java.lang.String to required type long; nested exception is java.lang.NumberFormatException: For input string: ad",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос составлен некорректно"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "Event with id=13 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Событие не найдено или недоступно"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "CONFLICT",
+                  "reason": "Integrity constraint has been violated.",
+                  "message": "could not execute statement; SQL [n/a]; constraint [uq_request]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Нарушение целостности данных"
+          }
+        },
+        "summary": "Добавление запроса от текущего пользователя на участие в событии",
+        "tags": [
+          "Private: Запросы на участие"
+        ]
+      }
+    },
+    "/users/{userId}/workouts/{workoutId}/cancel": {
+      "patch": {
+        "operationId": "cancelWorkoutRequest",
+        "parameters": [
+          {
+            "description": "id текущего пользователя",
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "description": "id запроса на участие",
+            "in": "path",
+            "name": "requestId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParticipationRequestDto"
+                }
+              }
+            },
+            "description": "Заявка отменена"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "NOT_FOUND",
+                  "reason": "The required object was not found.",
+                  "message": "Request with id=2727 was not found",
+                  "timestamp": "2022-09-07 09:10:50"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Запрос не найден или недоступен"
+          }
+        },
+        "summary": "Отмена своего запроса на участие в событии",
+        "tags": [
+          "Private: Запросы на участие"
+        ]
+      }
+    }
+  },
+
+
+  "components": {
+    "schemas": {
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "description": "Список стектрейсов или описания ошибок",
+            "example": [],
+            "items": {
+              "type": "string",
+              "description": "Список стектрейсов или описания ошибок",
+              "example": "[]"
+            }
+          },
+          "message": {
+            "type": "string",
+            "description": "Сообщение об ошибке",
+            "example": "Only pending or canceled events can be changed"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Общее описание причины ошибки",
+            "example": "For the requested operation the conditions are not met."
+          },
+          "status": {
+            "type": "string",
+            "description": "Код статуса HTTP-ответа",
+            "example": "FORBIDDEN",
+            "enum": [
+              "100 CONTINUE",
+              "101 SWITCHING_PROTOCOLS",
+              "102 PROCESSING",
+              "103 CHECKPOINT",
+              "200 OK",
+              "201 CREATED",
+              "202 ACCEPTED",
+              "203 NON_AUTHORITATIVE_INFORMATION",
+              "204 NO_CONTENT",
+              "205 RESET_CONTENT",
+              "206 PARTIAL_CONTENT",
+              "207 MULTI_STATUS",
+              "208 ALREADY_REPORTED",
+              "226 IM_USED",
+              "300 MULTIPLE_CHOICES",
+              "301 MOVED_PERMANENTLY",
+              "302 FOUND",
+              "302 MOVED_TEMPORARILY",
+              "303 SEE_OTHER",
+              "304 NOT_MODIFIED",
+              "305 USE_PROXY",
+              "307 TEMPORARY_REDIRECT",
+              "308 PERMANENT_REDIRECT",
+              "400 BAD_REQUEST",
+              "401 UNAUTHORIZED",
+              "402 PAYMENT_REQUIRED",
+              "403 FORBIDDEN",
+              "404 NOT_FOUND",
+              "405 METHOD_NOT_ALLOWED",
+              "406 NOT_ACCEPTABLE",
+              "407 PROXY_AUTHENTICATION_REQUIRED",
+              "408 REQUEST_TIMEOUT",
+              "409 CONFLICT",
+              "410 GONE",
+              "411 LENGTH_REQUIRED",
+              "412 PRECONDITION_FAILED",
+              "413 PAYLOAD_TOO_LARGE",
+              "413 REQUEST_ENTITY_TOO_LARGE",
+              "414 URI_TOO_LONG",
+              "414 REQUEST_URI_TOO_LONG",
+              "415 UNSUPPORTED_MEDIA_TYPE",
+              "416 REQUESTED_RANGE_NOT_SATISFIABLE",
+              "417 EXPECTATION_FAILED",
+              "418 I_AM_A_TEAPOT",
+              "419 INSUFFICIENT_SPACE_ON_RESOURCE",
+              "420 METHOD_FAILURE",
+              "421 DESTINATION_LOCKED",
+              "422 UNPROCESSABLE_ENTITY",
+              "423 LOCKED",
+              "424 FAILED_DEPENDENCY",
+              "425 TOO_EARLY",
+              "426 UPGRADE_REQUIRED",
+              "428 PRECONDITION_REQUIRED",
+              "429 TOO_MANY_REQUESTS",
+              "431 REQUEST_HEADER_FIELDS_TOO_LARGE",
+              "451 UNAVAILABLE_FOR_LEGAL_REASONS",
+              "500 INTERNAL_SERVER_ERROR",
+              "501 NOT_IMPLEMENTED",
+              "502 BAD_GATEWAY",
+              "503 SERVICE_UNAVAILABLE",
+              "504 GATEWAY_TIMEOUT",
+              "505 HTTP_VERSION_NOT_SUPPORTED",
+              "506 VARIANT_ALSO_NEGOTIATES",
+              "507 INSUFFICIENT_STORAGE",
+              "508 LOOP_DETECTED",
+              "509 BANDWIDTH_LIMIT_EXCEEDED",
+              "510 NOT_EXTENDED",
+              "511 NETWORK_AUTHENTICATION_REQUIRED"
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Дата и время когда произошла ошибка (в формате \"yyyy-MM-dd HH:mm:ss\")",
+            "example": "2022-06-09 06:27:23"
+          }
+        },
+        "description": "Сведения об ошибке"
+      },
+      "WorkoutCategoryDto": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Идентификатор категории",
+            "format": "int64",
+            "readOnly": true,
+            "example": 1
+          },
+          "name": {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string",
+            "description": "Название категории",
+            "example": "Силовые тренировки"
+          }
+        },
+        "description": "Категория тренировки"
+      },
+      "ScheduleDto": {
+        "required": [
+          "id",
+          "dayOfWeek",
+          "startTime",
+          "duration"
+        ],
+        "type": "object",
+        "properties": {
+          "workouts": {
+            "uniqueItems": true,
+            "type": "array",
+            "description": "",
+            "example": [
+              {
+                "title": "Сильная спина",
+                "category": {
+                  "id": 1,
+                  "name": "Силовые тренировки"
+                },
+                "Description": "Тренировка на мышцы спины",
+                "id": 1,
+                "coach": {
+                  "id": 3,
+                  "name": "Фёдоров Матвей"
+                },
+                "paid": false
+              },
+              {
+                "title": "Сильная спина",
+                "category": {
+                  "id": 1,
+                  "name": "Силовые тренировки"
+                },
+                "Description": "Тренировка на мышцы спины",
+                "id": 1,
+                "coach": {
+                  "id": 3,
+                  "name": "Фёдоров Матвей"
+                },
+                "paid": false
+              }
+            ],
+            "items": {
+              "$ref": "#/components/schemas/WorkoutShortDto"
+            }
+          },
+          "id": {
+            "type": "integer",
+            "description": "Идентификатор",
+            "format": "int64",
+            "example": 1
+          },
+          "dayOfWeek": {
+            "type": "string",
+            "description": "День недели",
+            "example": true
+          },
+          "startTime": {
+            "type": "string",
+            "description": "Заголовок подборки",
+            "example": "Летние концерты"
+          },
+          "duration": {
+            "type": "string",
+            "description": "Расписание с 1 по 7 декабря",
+            "example": "первая неделя"
+          }
+        },
+        "description": "Расписание тренировок"
+      },
+      "WorkoutFullDto": {
+        "required": [
+          "title",
+          "category",
+          "description",
+          "coach",
+          "participantLimit",
+          "paid",
+          "requestModeration"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Название тренировки",
+            "example": "Боди-флекс"
+          },
+          "category": {
+            "$ref": "#/components/schemas/WorkoutCategoryDto"
+          },
+          "description": {
+            "type": "string",
+            "description": "описание тренировки",
+            "example": "Отличная тренировка на гибкость тела"
+          },
+          "coach": {
+            "$ref": "#/components/schemas/CoachShortDto"
+          },
+          "participantLimit": {
+            "type": "integer",
+            "description": "Ограничение размера группы",
+            "format": "int64",
+            "example": 20
+          },
+          "id": {
+            "type": "integer",
+            "description": "Идентификатор",
+            "format": "int64",
+            "example": 1
+          },
+          "paid": {
+            "type": "boolean",
+            "description": "Нужно ли оплачивать участие",
+            "example": true
+          },
+          "requestModeration": {
+            "type": "boolean",
+            "description": "Нужна ли пре-модерация заявок на участие",
+            "example": false,
+            "default": false
+          }
+        }
+      },
+      "WorkoutShortDto": {
+        "required": [
+          "title",
+          "description",
+          "coach",
+          "participantLimit",
+          "paid"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Название тренировки",
+            "example": "Боди-флекс"
+          },
+          "description": {
+            "type": "string",
+            "description": "описание тренировки",
+            "example": "Отличная тренировка на гибкость тела"
+          },
+          "coach": {
+            "$ref": "#/components/schemas/CoachShortDto"
+          },
+          "participantLimit": {
+            "type": "integer",
+            "description": "Ограничение размера группы",
+            "format": "int64",
+            "example": 20
+          },
+          "paid": {
+            "type": "boolean",
+            "description": "Нужно ли оплачивать участие",
+            "example": true
+          }
+        }
+      },
+      "WorkoutNewDto": {
+        "required": [
+          "title",
+          "category",
+          "description",
+          "coach",
+          "participantLimit",
+          "paid",
+          "requestModeration"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Название тренировки",
+            "example": "Боди-флекс"
+          },
+          "category": {
+            "$ref": "#/components/schemas/WorkoutCategoryDto"
+          },
+          "description": {
+            "type": "string",
+            "description": "описание тренировки",
+            "example": "Отличная тренировка на гибкость тела"
+          },
+          "coach": {
+            "$ref": "#/components/schemas/CoachShortDto"
+          },
+          "participantLimit": {
+            "type": "integer",
+            "description": "Ограничение размера группы",
+            "format": "int64",
+            "example": 20
+          },
+          "id": {
+            "type": "integer",
+            "description": "Идентификатор",
+            "format": "int64",
+            "example": 1
+          },
+          "paid": {
+            "type": "boolean",
+            "description": "Нужно ли оплачивать участие",
+            "example": true
+          },
+          "requestModeration": {
+            "type": "boolean",
+            "description": "Нужна ли пре-модерация заявок на участие",
+            "example": false,
+            "default": false
+          }
+        }
+      },
+      "EventRequestStatusUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "requestIds": {
+            "type": "array",
+            "description": "Идентификаторы запросов на участие в событии текущего пользователя",
+            "example": [
+              1,
+              2,
+              3
+            ],
+            "items": {
+              "type": "integer",
+              "description": "Идентификаторы запросов на участие в событии текущего пользователя",
+              "format": "int64"
+            }
+          },
+          "status": {
+            "type": "string",
+            "description": "Новый статус запроса на участие в событии текущего пользователя",
+            "example": "CONFIRMED",
+            "enum": [
+              "CONFIRMED",
+              "REJECTED"
+            ]
+          }
+        },
+        "description": "Изменение статуса запроса на участие в событии текущего пользователя"
+      },
+      "EventRequestStatusUpdateResult": {
+        "type": "object",
+        "properties": {
+          "confirmedRequests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParticipationRequestDto"
+            }
+          },
+          "rejectedRequests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParticipationRequestDto"
+            }
+          }
+        },
+        "description": "Результат подтверждения/отклонения заявок на участие в событии"
+      },
+      "CategoryNewDto": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string",
+            "description": "Название категории",
+            "example": "Функциональная"
+          }
+        },
+        "description": "Данные для добавления новой категории тренировок"
+      },
+      "CategoryDto": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Идентификатор категории",
+            "format": "int64",
+            "readOnly": true,
+            "example": 1
+          },
+          "name": {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string",
+            "description": "Название категории",
+            "example": "Функциональная"
+          }
+        },
+        "description": "Данные для добавления новой категории тренировок"
+      },
+      "UserNewDto": {
+        "required": [
+          "email",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "maxLength": 254,
+            "minLength": 6,
+            "type": "string",
+            "description": "Почтовый адрес",
+            "example": "ivan.petrov@practicummail.ru"
+          },
+          "name": {
+            "maxLength": 250,
+            "minLength": 2,
+            "type": "string",
+            "description": "Имя",
+            "example": "Иван Петров"
+          }
+        },
+        "description": "Данные нового пользователя"
+      },
+      "ParticipationRequestDto": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "string",
+            "description": "Дата и время создания заявки",
+            "example": "2022-09-06T21:10:05.432"
+          },
+          "event": {
+            "type": "integer",
+            "description": "Идентификатор события",
+            "format": "int64",
+            "example": 1
+          },
+          "id": {
+            "type": "integer",
+            "description": "Идентификатор заявки",
+            "format": "int64",
+            "example": 3
+          },
+          "requester": {
+            "type": "integer",
+            "description": "Идентификатор пользователя, отправившего заявку",
+            "format": "int64",
+            "example": 2
+          },
+          "status": {
+            "type": "string",
+            "description": "Статус заявки",
+            "example": "PENDING"
+          }
+        },
+        "description": "Заявка на участие в событии"
+      },
+
+      "UpdateWorkoutAdminRequest": {
+        "type": "object",
+        "properties": {
+          "annotation": {
+            "maxLength": 2000,
+            "minLength": 20,
+            "type": "string",
+            "description": "Новая аннотация",
+            "example": "Сап прогулки по рекам и каналам – это возможность увидеть Практикбург с другого ракурса"
+          },
+          "category": {
+            "type": "integer",
+            "description": "Новая категория",
+            "format": "int64",
+            "example": 3
+          },
+          "description": {
+            "maxLength": 7000,
+            "minLength": 20,
+            "type": "string",
+            "description": "Новое описание",
+            "example": "От английского SUP - Stand Up Paddle — \"стоя на доске с веслом\", гавайская разновидность сёрфинга, в котором серфер, стоя на доске, катается на волнах и при этом гребет веслом, а не руками, как в классическом серфинге."
+          },
+          "eventDate": {
+            "type": "string",
+            "description": "Новые дата и время на которые намечено событие. Дата и время указываются в формате \"yyyy-MM-dd HH:mm:ss\"",
+            "example": "2023-10-11 23:10:05"
+          },
+          "paid": {
+            "type": "boolean",
+            "description": "Новое значение флага о платности мероприятия",
+            "example": true
+          },
+          "participantLimit": {
+            "type": "integer",
+            "description": "Новый лимит пользователей",
+            "format": "int32",
+            "example": 7
+          },
+          "requestModeration": {
+            "type": "boolean",
+            "description": "Нужна ли пре-модерация заявок на участие",
+            "example": false
+          },
+          "stateAction": {
+            "type": "string",
+            "description": "Новое состояние события",
+            "enum": [
+              "PUBLISH_EVENT",
+              "REJECT_EVENT"
+            ]
+          },
+          "title": {
+            "maxLength": 120,
+            "minLength": 3,
+            "type": "string",
+            "description": "Новый заголовок",
+            "example": "Сап прогулки по рекам и каналам"
+          }
+        },
+        "description": "Данные для изменения информации о тренировке. Если поле в запросе не указано (равно null) - значит изменение этих данных не треубется."
+      },
+      "UserDto": {
+        "required": [
+          "email",
+          "mobileNumber",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Почтовый адрес",
+            "example": "petrov.i@practicummail.ru"
+          },
+          "mobileNumber": {
+            "type": "string",
+            "description": "номер мобильного телефона",
+            "example": "89215557799"
+          },
+          "id": {
+            "type": "integer",
+            "description": "Идентификатор",
+            "format": "int64",
+            "readOnly": true,
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Имя",
+            "example": "Петров Иван"
+          }
+        },
+        "description": "Пользователь"
+      },
+      "UserShortDto": {
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Идентификатор",
+            "format": "int64",
+            "example": 3
+          },
+          "name": {
+            "type": "string",
+            "description": "Имя",
+            "example": "Фёдоров Матвей"
+          }
+        },
+        "description": "Пользователь (краткая информация)"
+      },
+      "CoachDto": {
+        "required": [
+          "email",
+          "name",
+          "mobileNumber",
+          "education",
+          "specialization",
+          "coachingExperience"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Почтовый адрес",
+            "example": "petrov.i@practicummail.ru"
+          },
+          "id": {
+            "type": "integer",
+            "description": "Идентификатор",
+            "format": "int64",
+            "readOnly": true,
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Имя",
+            "example": "Петров Иван"
+          },
+          "mobileNumber": {
+            "type": "string",
+            "description": "номер мобильного телефона",
+            "example": "89215557799"
+          },
+          "education": {
+            "type": "string",
+            "description": "образование",
+            "example": "Высшее, тренер боевых искусств"
+          },
+          "progress": {
+            "type": "string",
+            "description": "достижения",
+            "example": "2-ой взрослый разряд по плаванию (школа олимпийского резерва «Дороти»)."
+          },
+          "specialization": {
+            "uniqueItems": true,
+            "type": "array",
+            "description": "Список id специализаций тренера",
+            "items": {
+              "type": "integer",
+              "description": "Список id специализаций тренера",
+              "format": "int64"
+            }            
+          },
+          "coachingExperience": {
+            "type": "string",
+            "description": "тренерский стаж",
+            "example": "С 2010 года."
+          }
+        },
+        "description": "Инструктор"
+      },
+      "CoachShortDto": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Имя",
+            "example": "Петров Иван"
+          }
+        },
+        "description": "Инструктор(краткая информация)"
+      }
+    }
+  }
+}
